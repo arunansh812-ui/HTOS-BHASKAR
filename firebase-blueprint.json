@@ -1,0 +1,282 @@
+{
+  "entities": {
+    "Setting": {
+      "title": "Setting",
+      "description": "Global school portal configuration key-value entries (admissions_enabled, auth_secret).",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string", "maxLength": 128 },
+        "value": { "type": "string", "maxLength": 2048 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["key", "value"]
+    },
+    "Counter": {
+      "title": "Counter",
+      "description": "Atomic sequential numeric ID generator for domain collections and roll sequences.",
+      "type": "object",
+      "properties": {
+        "value": { "type": "integer" }
+      },
+      "required": ["value"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Portal user account for Administrator, Nodal Officer, or Staff.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "user_id": { "type": "string", "maxLength": 64 },
+        "user_id_lower": { "type": "string", "maxLength": 64 },
+        "password_hash": { "type": "string", "maxLength": 256 },
+        "role": { "type": "string", "enum": ["admin", "nodal_officer", "staff"] },
+        "name": { "type": "string", "maxLength": 120 },
+        "employee_id": { "type": "string", "maxLength": 64 },
+        "designation": { "type": "string", "enum": ["Subject Teacher", "Class Teacher", "Both"] },
+        "assigned_class": { "type": "string", "maxLength": 10 },
+        "assigned_section": { "type": "string", "maxLength": 10 },
+        "assigned_subjects": { "type": "array" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "user_id", "password_hash", "role", "name", "assigned_subjects", "created_at"]
+    },
+    "Circular": {
+      "title": "Circular",
+      "description": "Official school circular published on the home page board.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "circular_number": { "type": "string", "maxLength": 100 },
+        "circular_number_lower": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "maxLength": 300 },
+        "file_id": { "type": "string", "maxLength": 128 },
+        "original_filename": { "type": "string", "maxLength": 255 },
+        "mime_type": { "type": "string", "maxLength": 100 },
+        "file_size": { "type": "integer" },
+        "created_by": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "circular_number", "title", "file_id", "original_filename", "mime_type", "file_size", "created_at"]
+    },
+    "QuestionPaper": {
+      "title": "QuestionPaper",
+      "description": "Previous year or practice question paper PDF for a class, section, and subject.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "title": { "type": "string", "maxLength": 300 },
+        "class_name": { "type": "string", "maxLength": 10 },
+        "section": { "type": "string", "maxLength": 10 },
+        "class_section": { "type": "string", "maxLength": 24 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "academic_year": { "type": "string", "maxLength": 32 },
+        "file_id": { "type": "string", "maxLength": 128 },
+        "original_filename": { "type": "string", "maxLength": 255 },
+        "file_size": { "type": "integer" },
+        "uploaded_by": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "class_name", "section", "subject", "academic_year", "file_id", "original_filename", "file_size", "created_at"]
+    },
+    "AdmissionApplication": {
+      "title": "AdmissionApplication",
+      "description": "Student admission application submitted online and reviewed by the Nodal Officer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "application_code": { "type": "string", "maxLength": 64 },
+        "student_name": { "type": "string", "maxLength": 120 },
+        "father_name": { "type": "string", "maxLength": 120 },
+        "mother_name": { "type": "string", "maxLength": 120 },
+        "dob": { "type": "string", "maxLength": 20 },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+        "category": { "type": "string", "maxLength": 64 },
+        "address": { "type": "string", "maxLength": 600 },
+        "contact_phone": { "type": "string", "maxLength": 32 },
+        "contact_email": { "type": "string", "maxLength": 128 },
+        "previous_school": { "type": "string", "maxLength": 200 },
+        "previous_percentage": { "type": "string", "maxLength": 16 },
+        "tc_number": { "type": "string", "maxLength": 64 },
+        "class_applied": { "type": "string", "maxLength": 10 },
+        "stream_applied": { "type": "string", "maxLength": 48 },
+        "entrance_marks": { "type": "number" },
+        "photo_filename": { "type": "string", "maxLength": 128 },
+        "doc_file_id": { "type": "string", "maxLength": 128 },
+        "doc_filename": { "type": "string", "maxLength": 255 },
+        "status": { "type": "string", "enum": ["Pending", "Waitlisted", "Correction Needed", "Approved", "Denied"] },
+        "viewed_by_officer": { "type": "boolean" },
+        "viewed_at": { "type": "string", "format": "date-time" },
+        "roll_number": { "type": "string", "maxLength": 64 },
+        "allotted_section": { "type": "string", "maxLength": 10 },
+        "enrolled_student_id": { "type": "string", "maxLength": 64 },
+        "denial_reason": { "type": "string", "maxLength": 500 },
+        "officer_notes": { "type": "string", "maxLength": 500 },
+        "decided_at": { "type": "string", "format": "date-time" },
+        "decided_by": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "application_code", "student_name", "father_name", "mother_name", "dob", "gender", "address", "contact_phone", "class_applied", "photo_filename", "status", "viewed_by_officer", "created_at"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Enrolled student record managed by assigned Class Teachers.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "student_id": { "type": "string", "maxLength": 64 },
+        "roll_number": { "type": "string", "maxLength": 32 },
+        "board_no": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 120 },
+        "class_name": { "type": "string", "maxLength": 10 },
+        "section": { "type": "string", "maxLength": 10 },
+        "class_section": { "type": "string", "maxLength": 24 },
+        "created_by": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "student_id", "roll_number", "name", "class_name", "section", "created_at"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance status per student per date.",
+      "type": "object",
+      "properties": {
+        "student_db_id": { "type": "integer" },
+        "student_id": { "type": "string", "maxLength": 64 },
+        "class_name": { "type": "string", "maxLength": 10 },
+        "section": { "type": "string", "maxLength": 10 },
+        "date": { "type": "string", "maxLength": 16 },
+        "class_section_date": { "type": "string", "maxLength": 48 },
+        "status": { "type": "string", "enum": ["Present", "Absent", "Leave"] },
+        "marked_by": { "type": "integer" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["student_db_id", "student_id", "class_name", "section", "date", "status", "updated_at"]
+    },
+    "MarkingScheme": {
+      "title": "MarkingScheme",
+      "description": "Examination assessment configuration per class (max marks, passing marks, display order).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "class_name": { "type": "string", "maxLength": 10 },
+        "assessment_name": { "type": "string", "maxLength": 120 },
+        "max_marks": { "type": "number" },
+        "passing_marks": { "type": "number" },
+        "display_order": { "type": "integer" },
+        "is_published": { "type": "boolean" },
+        "published_at": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "class_name", "assessment_name", "max_marks", "passing_marks", "display_order", "created_at"]
+    },
+    "ResultPublication": {
+      "title": "ResultPublication",
+      "description": "Per-class result publication toggle controlled by the Administrator.",
+      "type": "object",
+      "properties": {
+        "class_name": { "type": "string", "maxLength": 10 },
+        "is_published": { "type": "boolean" },
+        "published_at": { "type": "string", "format": "date-time" },
+        "published_by": { "type": "integer" }
+      },
+      "required": ["class_name", "is_published"]
+    },
+    "Mark": {
+      "title": "Mark",
+      "description": "Student examination marks for a specific subject and assessment.",
+      "type": "object",
+      "properties": {
+        "student_id": { "type": "string", "maxLength": 64 },
+        "class_name": { "type": "string", "maxLength": 10 },
+        "section": { "type": "string", "maxLength": 10 },
+        "class_section": { "type": "string", "maxLength": 24 },
+        "class_section_subject": { "type": "string", "maxLength": 96 },
+        "subject": { "type": "string", "maxLength": 64 },
+        "assessment_id": { "type": "integer" },
+        "marks_obtained": { "type": "number" },
+        "academic_session": { "type": "string", "maxLength": 32 },
+        "entered_by": { "type": "integer" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["student_id", "class_name", "section", "subject", "assessment_id", "marks_obtained", "updated_at"]
+    },
+    "StoredFile": {
+      "title": "StoredFile",
+      "description": "Metadata header for binary files stored in chunked subcollections.",
+      "type": "object",
+      "properties": {
+        "file_id": { "type": "string", "maxLength": 128 },
+        "mime_type": { "type": "string", "maxLength": 128 },
+        "original_filename": { "type": "string", "maxLength": 255 },
+        "file_size": { "type": "integer" },
+        "chunk_count": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["file_id", "mime_type", "original_filename", "file_size", "chunk_count", "created_at"]
+    },
+    "StoredFileChunk": {
+      "title": "StoredFileChunk",
+      "description": "500 KB binary chunk slice belonging to a StoredFile document.",
+      "type": "object",
+      "properties": {
+        "index": { "type": "integer" },
+        "data": { "type": "string" }
+      },
+      "required": ["index", "data"]
+    }
+  },
+  "firestore": {
+    "/portals/{portalKey}/settings/{settingKey}": {
+      "schema": { "$ref": "#/entities/Setting" },
+      "description": "Portal configuration entries scoped to the backend portal key."
+    },
+    "/portals/{portalKey}/counters/{counterName}": {
+      "schema": { "$ref": "#/entities/Counter" },
+      "description": "Atomic sequence counters scoped to the backend portal key."
+    },
+    "/portals/{portalKey}/users/{userDocId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Portal user credentials and role assignments."
+    },
+    "/portals/{portalKey}/circulars/{circularId}": {
+      "schema": { "$ref": "#/entities/Circular" },
+      "description": "Published school circulars."
+    },
+    "/portals/{portalKey}/question_papers/{paperId}": {
+      "schema": { "$ref": "#/entities/QuestionPaper" },
+      "description": "Class/section/subject question papers."
+    },
+    "/portals/{portalKey}/admission_applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/AdmissionApplication" },
+      "description": "Submitted student admission applications."
+    },
+    "/portals/{portalKey}/students/{studentDocId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Enrolled student registry."
+    },
+    "/portals/{portalKey}/attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Daily attendance records."
+    },
+    "/portals/{portalKey}/marking_schemes/{schemeId}": {
+      "schema": { "$ref": "#/entities/MarkingScheme" },
+      "description": "Class-level examination marking schemes."
+    },
+    "/portals/{portalKey}/result_publications/{className}": {
+      "schema": { "$ref": "#/entities/ResultPublication" },
+      "description": "Per-class result publication flags."
+    },
+    "/portals/{portalKey}/marks/{markId}": {
+      "schema": { "$ref": "#/entities/Mark" },
+      "description": "Marks records."
+    },
+    "/portals/{portalKey}/stored_files/{fileId}": {
+      "schema": { "$ref": "#/entities/StoredFile" },
+      "description": "Binary file headers for circulars, papers, and admission photos."
+    },
+    "/portals/{portalKey}/stored_files/{fileId}/chunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/StoredFileChunk" },
+      "description": "Ordered 500 KB binary chunks for each stored file."
+    }
+  }
+}

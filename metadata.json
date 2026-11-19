@@ -1,0 +1,10 @@
+{
+  "name": "MoE",
+  "description": "MoE — Official portal of Moreden of Education International School for circulars, admissions, student attendance, academics, examination results, staff management, and nodal officer workflows.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

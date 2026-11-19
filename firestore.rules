@@ -1,0 +1,341 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidPortalKey(portalKey) {
+      return portalKey == 'moe_portal_951302b9_b5c8_405c_bc1c_4c117be38c7d_7f3a9d2e1b8c4f60';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9][a-zA-Z0-9_.\\-]{0,127}$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidOptStr(val, maxLen) {
+      return val == null || (val is string && val.size() <= maxLen);
+    }
+
+    function isValidOptInt(val) {
+      return val == null || val is int;
+    }
+
+    function isValidSetting(data) {
+      return data.keys().hasAll(['key', 'value'])
+        && data.keys().hasOnly(['key', 'value', 'updatedAt'])
+        && data.key is string && data.key.size() <= 128
+        && data.value is string && data.value.size() <= 2048
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidCounter(data) {
+      return data.keys().hasAll(['value'])
+        && data.keys().hasOnly(['value'])
+        && data.value is int && data.value >= 0;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'user_id', 'password_hash', 'role', 'name', 'assigned_subjects', 'created_at'])
+        && data.keys().hasOnly([
+          'id', 'user_id', 'user_id_lower', 'password_hash', 'role', 'name', 'employee_id',
+          'designation', 'assigned_class', 'assigned_section', 'assigned_subjects', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.user_id is string && data.user_id.size() >= 1 && data.user_id.size() <= 64
+        && (!('user_id_lower' in data) || isValidOptStr(data.user_id_lower, 64))
+        && data.password_hash is string && data.password_hash.size() <= 256
+        && data.role in ['admin', 'nodal_officer', 'staff']
+        && data.name is string && data.name.size() <= 120
+        && (!('employee_id' in data) || isValidOptStr(data.employee_id, 64))
+        && (!('designation' in data) || data.designation == null || data.designation in ['Subject Teacher', 'Class Teacher', 'Both'])
+        && (!('assigned_class' in data) || isValidOptStr(data.assigned_class, 10))
+        && (!('assigned_section' in data) || isValidOptStr(data.assigned_section, 10))
+        && data.assigned_subjects is list && data.assigned_subjects.size() <= 20
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidCircular(data) {
+      return data.keys().hasAll(['id', 'circular_number', 'title', 'file_id', 'original_filename', 'mime_type', 'file_size', 'created_at'])
+        && data.keys().hasOnly([
+          'id', 'circular_number', 'circular_number_lower', 'title', 'file_id', 'original_filename',
+          'mime_type', 'file_size', 'created_by', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.circular_number is string && data.circular_number.size() <= 100
+        && (!('circular_number_lower' in data) || isValidOptStr(data.circular_number_lower, 100))
+        && data.title is string && data.title.size() <= 300
+        && data.file_id is string && data.file_id.size() <= 128
+        && data.original_filename is string && data.original_filename.size() <= 255
+        && data.mime_type is string && data.mime_type.size() <= 100
+        && data.file_size is int && data.file_size >= 0
+        && (!('created_by' in data) || isValidOptInt(data.created_by))
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidQuestionPaper(data) {
+      return data.keys().hasAll(['id', 'title', 'class_name', 'section', 'subject', 'academic_year', 'file_id', 'original_filename', 'file_size', 'created_at'])
+        && data.keys().hasOnly([
+          'id', 'title', 'class_name', 'section', 'class_section', 'subject', 'academic_year',
+          'file_id', 'original_filename', 'file_size', 'uploaded_by', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.title is string && data.title.size() <= 300
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.section is string && data.section.size() <= 10
+        && (!('class_section' in data) || isValidOptStr(data.class_section, 24))
+        && data.subject is string && data.subject.size() <= 100
+        && data.academic_year is string && data.academic_year.size() <= 32
+        && data.file_id is string && data.file_id.size() <= 128
+        && data.original_filename is string && data.original_filename.size() <= 255
+        && data.file_size is int && data.file_size >= 0
+        && (!('uploaded_by' in data) || isValidOptInt(data.uploaded_by))
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidAdmissionApplication(data) {
+      return data.keys().hasAll([
+        'id', 'application_code', 'student_name', 'father_name', 'mother_name', 'dob',
+        'gender', 'address', 'contact_phone', 'class_applied', 'photo_filename',
+        'status', 'viewed_by_officer', 'created_at'
+      ])
+        && data.keys().hasOnly([
+          'id', 'application_code', 'student_name', 'father_name', 'mother_name', 'dob',
+          'gender', 'category', 'address', 'contact_phone', 'contact_email', 'previous_school',
+          'previous_percentage', 'tc_number', 'class_applied', 'stream_applied', 'entrance_marks',
+          'photo_filename', 'doc_file_id', 'doc_filename', 'status', 'viewed_by_officer',
+          'viewed_at', 'roll_number', 'allotted_section', 'enrolled_student_id', 'denial_reason',
+          'officer_notes', 'decided_at', 'decided_by', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.application_code is string && data.application_code.size() <= 64
+        && data.student_name is string && data.student_name.size() <= 120
+        && data.father_name is string && data.father_name.size() <= 120
+        && data.mother_name is string && data.mother_name.size() <= 120
+        && data.dob is string && data.dob.size() <= 20
+        && data.gender in ['Male', 'Female', 'Other']
+        && (!('category' in data) || isValidOptStr(data.category, 64))
+        && data.address is string && data.address.size() <= 600
+        && data.contact_phone is string && data.contact_phone.size() <= 32
+        && (!('contact_email' in data) || isValidOptStr(data.contact_email, 128))
+        && (!('previous_school' in data) || isValidOptStr(data.previous_school, 200))
+        && (!('previous_percentage' in data) || isValidOptStr(data.previous_percentage, 16))
+        && (!('tc_number' in data) || isValidOptStr(data.tc_number, 64))
+        && data.class_applied is string && data.class_applied.size() <= 10
+        && (!('stream_applied' in data) || isValidOptStr(data.stream_applied, 48))
+        && (!('entrance_marks' in data) || data.entrance_marks == null || (data.entrance_marks is number && data.entrance_marks >= 0 && data.entrance_marks <= 100))
+        && data.photo_filename is string && data.photo_filename.size() <= 128
+        && (!('doc_file_id' in data) || isValidOptStr(data.doc_file_id, 128))
+        && (!('doc_filename' in data) || isValidOptStr(data.doc_filename, 255))
+        && data.status in ['Pending', 'Waitlisted', 'Correction Needed', 'Approved', 'Denied']
+        && data.viewed_by_officer is bool
+        && (!('viewed_at' in data) || isValidOptStr(data.viewed_at, 64))
+        && (!('roll_number' in data) || isValidOptStr(data.roll_number, 64))
+        && (!('allotted_section' in data) || isValidOptStr(data.allotted_section, 10))
+        && (!('enrolled_student_id' in data) || isValidOptStr(data.enrolled_student_id, 64))
+        && (!('denial_reason' in data) || isValidOptStr(data.denial_reason, 500))
+        && (!('officer_notes' in data) || isValidOptStr(data.officer_notes, 500))
+        && (!('decided_at' in data) || isValidOptStr(data.decided_at, 64))
+        && (!('decided_by' in data) || isValidOptInt(data.decided_by))
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidStudent(data) {
+      return data.keys().hasAll(['id', 'student_id', 'roll_number', 'name', 'class_name', 'section', 'created_at'])
+        && data.keys().hasOnly([
+          'id', 'student_id', 'roll_number', 'board_no', 'name',
+          'class_name', 'section', 'class_section', 'created_by', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.student_id is string && data.student_id.size() <= 64
+        && data.roll_number is string && data.roll_number.size() <= 32
+        && (!('board_no' in data) || isValidOptStr(data.board_no, 64))
+        && data.name is string && data.name.size() <= 120
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.section is string && data.section.size() <= 10
+        && (!('class_section' in data) || isValidOptStr(data.class_section, 24))
+        && (!('created_by' in data) || isValidOptInt(data.created_by))
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidAttendance(data) {
+      return data.keys().hasAll(['student_db_id', 'student_id', 'class_name', 'section', 'date', 'status', 'updated_at'])
+        && data.keys().hasOnly([
+          'student_db_id', 'student_id', 'class_name', 'section',
+          'date', 'class_section_date', 'status', 'marked_by', 'updated_at'
+        ])
+        && data.student_db_id is int && data.student_db_id >= 1
+        && data.student_id is string && data.student_id.size() <= 64
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.section is string && data.section.size() <= 10
+        && data.date is string && data.date.size() <= 16
+        && (!('class_section_date' in data) || isValidOptStr(data.class_section_date, 48))
+        && data.status in ['Present', 'Absent', 'Leave']
+        && (!('marked_by' in data) || isValidOptInt(data.marked_by))
+        && data.updated_at is string && data.updated_at.size() <= 64;
+    }
+
+    function isValidMarkingScheme(data) {
+      return data.keys().hasAll(['id', 'class_name', 'assessment_name', 'max_marks', 'passing_marks', 'display_order', 'created_at'])
+        && data.keys().hasOnly([
+          'id', 'class_name', 'assessment_name', 'max_marks',
+          'passing_marks', 'display_order', 'is_published', 'published_at', 'created_at'
+        ])
+        && data.id is int && data.id >= 1
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.assessment_name is string && data.assessment_name.size() <= 120
+        && data.max_marks is number && data.max_marks > 0
+        && data.passing_marks is number && data.passing_marks >= 0
+        && data.display_order is int && data.display_order >= 0
+        && (!('is_published' in data) || data.is_published is bool)
+        && (!('published_at' in data) || isValidOptStr(data.published_at, 64))
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidResultPublication(data) {
+      return data.keys().hasAll(['class_name', 'is_published'])
+        && data.keys().hasOnly(['class_name', 'is_published', 'published_at', 'published_by'])
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.is_published is bool
+        && (!('published_at' in data) || isValidOptStr(data.published_at, 64))
+        && (!('published_by' in data) || isValidOptInt(data.published_by));
+    }
+
+    function isValidMark(data) {
+      return data.keys().hasAll(['student_id', 'class_name', 'section', 'subject', 'assessment_id', 'marks_obtained', 'updated_at'])
+        && data.keys().hasOnly([
+          'student_id', 'class_name', 'section', 'class_section', 'class_section_subject', 'subject',
+          'assessment_id', 'marks_obtained', 'academic_session', 'entered_by', 'updated_at'
+        ])
+        && data.student_id is string && data.student_id.size() <= 64
+        && data.class_name is string && data.class_name.size() <= 10
+        && data.section is string && data.section.size() <= 10
+        && (!('class_section' in data) || isValidOptStr(data.class_section, 24))
+        && (!('class_section_subject' in data) || isValidOptStr(data.class_section_subject, 96))
+        && data.subject is string && data.subject.size() <= 64
+        && data.assessment_id is int && data.assessment_id >= 1
+        && data.marks_obtained is number && data.marks_obtained >= 0
+        && (!('academic_session' in data) || isValidOptStr(data.academic_session, 32))
+        && (!('entered_by' in data) || isValidOptInt(data.entered_by))
+        && data.updated_at is string && data.updated_at.size() <= 64;
+    }
+
+    function isValidStoredFile(data) {
+      return data.keys().hasAll(['file_id', 'mime_type', 'original_filename', 'file_size', 'chunk_count', 'created_at'])
+        && data.keys().hasOnly(['file_id', 'mime_type', 'original_filename', 'file_size', 'chunk_count', 'created_at'])
+        && data.file_id is string && data.file_id.size() <= 128
+        && data.mime_type is string && data.mime_type.size() <= 128
+        && data.original_filename is string && data.original_filename.size() <= 255
+        && data.file_size is int && data.file_size >= 0
+        && data.chunk_count is int && data.chunk_count >= 1
+        && data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    function isValidStoredFileChunk(data) {
+      return data.keys().hasAll(['index', 'data'])
+        && data.keys().hasOnly(['index', 'data'])
+        && data.index is int && data.index >= 0
+        && data.data is bytes && data.data.size() <= 700000;
+    }
+
+    match /portals/{portalKey} {
+      allow read, write: if false;
+
+      match /settings/{settingKey} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(settingKey);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(settingKey) && isValidSetting(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(settingKey);
+      }
+
+      match /counters/{counterName} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(counterName);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(counterName) && isValidCounter(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(counterName);
+      }
+
+      match /users/{userDocId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(userDocId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(userDocId) && isValidUser(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(userDocId);
+      }
+
+      match /circulars/{circularId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(circularId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(circularId) && isValidCircular(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(circularId);
+      }
+
+      match /question_papers/{paperId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(paperId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(paperId) && isValidQuestionPaper(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(paperId);
+      }
+
+      match /admission_applications/{applicationId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(applicationId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(applicationId) && isValidAdmissionApplication(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(applicationId);
+      }
+
+      match /students/{studentDocId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(studentDocId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(studentDocId) && isValidStudent(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(studentDocId);
+      }
+
+      match /attendance/{attendanceId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(attendanceId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(attendanceId) && isValidAttendance(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(attendanceId);
+      }
+
+      match /marking_schemes/{schemeId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(schemeId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(schemeId) && isValidMarkingScheme(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(schemeId);
+      }
+
+      match /result_publications/{className} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(className);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(className) && isValidResultPublication(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(className);
+      }
+
+      match /marks/{markId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(markId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(markId) && isValidMark(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(markId);
+      }
+
+      match /stored_files/{fileId} {
+        allow get: if isValidPortalKey(portalKey) && isValidId(fileId);
+        allow list: if isValidPortalKey(portalKey);
+        allow create, update: if isValidPortalKey(portalKey) && isValidId(fileId) && isValidStoredFile(incoming());
+        allow delete: if isValidPortalKey(portalKey) && isValidId(fileId);
+
+        match /chunks/{chunkId} {
+          allow get: if isValidPortalKey(portalKey) && isValidId(fileId) && isValidId(chunkId);
+          allow list: if isValidPortalKey(portalKey) && isValidId(fileId);
+          allow create, update: if isValidPortalKey(portalKey) && isValidId(fileId) && isValidId(chunkId) && isValidStoredFileChunk(incoming());
+          allow delete: if isValidPortalKey(portalKey) && isValidId(fileId) && isValidId(chunkId);
+        }
+      }
+    }
+  }
+}
